@@ -16,7 +16,7 @@ public class InputDataParams {
     @NonNull
     private String conversionTableFullFileName;
     @NonNull
-    private ConvDirection convDirection;
+    private String convDirection;
     @NonNull
     private Integer recordLength;
 

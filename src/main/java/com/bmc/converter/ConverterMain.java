@@ -14,7 +14,7 @@ public class ConverterMain {
     public static void main(String[] args) {
         if (args.length == 5) {
             InputDataParams inputDataParams = InputDataParams.builder().sourceFullFileName(args[0]).destFullFileName(args[1])
-                    .conversionTableFullFileName(args[2]).convDirection(ConvDirection.valueOf(args[3])).recordLength(Integer.valueOf(args[4])).build();
+                    .conversionTableFullFileName(args[2]).convDirection(args[3]).recordLength(Integer.valueOf(args[4])).build();
             ConfigurableApplicationContext context = SpringApplication.run(ConverterMain.class);
             context.getBean(FlowController.class).controlFlow(inputDataParams);
         }

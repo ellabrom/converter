@@ -7,19 +7,24 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.RandomAccessFile;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class FlowControllerImp implements FlowController{
     @Autowired
     ConvTableLoader conversionTableLoader;
+
     @Autowired
-    FileConverter fileConverter;
+    Map<String, FileConverter> fileConverterMap;
+
     @Override
     @SneakyThrows
     public void controlFlow(InputDataParams inputDataParams) {
         List<Integer> conversionTable = conversionTableLoader.loadConvTableToArray(inputDataParams);
-        fileConverter.convertInputFile(inputDataParams, conversionTable);
+        FileConverter fileConverter = fileConverterMap.get(inputDataParams.getConvDirection());
+        if (fileConverter != null) {
+            fileConverter.convertInputFile(inputDataParams, conversionTable);
+        }
     }
 }

@@ -8,32 +8,23 @@ import org.springframework.stereotype.Service;
 import java.io.RandomAccessFile;
 import java.util.List;
 
-
-public class FileConverterImp  {
-
+@Service(ConvDirection.ETOA)
+public class FileConverterImpETOA implements FileConverter {
+    @Override
     @SneakyThrows
     public void convertInputFile(InputDataParams inputDataParams, List<Integer> conversionTable) {
         RandomAccessFile inputFile = new RandomAccessFile(inputDataParams.getSourceFullFileName(), "r");
         RandomAccessFile outputFile = new RandomAccessFile(inputDataParams.getDestFullFileName(), "rw");
-        int readLength;
-        int writeLength;
-        if (inputDataParams.getConvDirection().equals(ConvDirection.ETOA)){
-            readLength = inputDataParams.getRecordLength();
-            writeLength = inputDataParams.getRecordLength()+1;
-        }
-        else{
-            readLength = inputDataParams.getRecordLength()+1;
-            writeLength = inputDataParams.getRecordLength();
-        }
+        int readLength = inputDataParams.getRecordLength();
+        int writeLength = inputDataParams.getRecordLength() + 1;
         byte[] readBytes = new byte[readLength];
         byte[] writeBytes = new byte[writeLength];
-        if (inputDataParams.getConvDirection().equals(ConvDirection.ETOA)) {
-            writeBytes[writeLength-1]='\n';
-        }
+        writeBytes[writeLength - 1] = '\n'; // File in EBCDIC doesn't have end of line character, so it is added here.
+
         while (inputFile.getFilePointer() < inputFile.length()) {
             inputFile.read(readBytes);
             for (int i = 0; i < inputDataParams.getRecordLength(); i++) {
-               int arrayLocation = Byte.toUnsignedInt(readBytes[i]) ;//  readBytes[i] & 0xFF;
+                int arrayLocation = Byte.toUnsignedInt(readBytes[i]);
                 Integer convertedValue = conversionTable.get(arrayLocation);
                 writeBytes[i] = convertedValue.byteValue();
             }
@@ -43,3 +34,4 @@ public class FileConverterImp  {
         outputFile.close();
     }
 }
+
