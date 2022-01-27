@@ -15,21 +15,26 @@ public class FileConverterImpATOE implements FileConverter {
     public void convertInputFile(InputDataParams inputDataParams, List<Integer> conversionTable) {
         RandomAccessFile inputFile = new RandomAccessFile(inputDataParams.getSourceFullFileName(), "r");
         RandomAccessFile outputFile = new RandomAccessFile(inputDataParams.getDestFullFileName(), "rw");
+        byte[] readBytesBuff = new byte[inputDataParams.getRecordLength()];
         byte[] writeBytes = new byte[inputDataParams.getRecordLength()];
         Integer convertedValue;
+        int bytesInWriteLineCounter = 0;
         while (inputFile.getFilePointer() < inputFile.length()) {
-            int read = inputFile.read();
-            int bytesInLineCounter = 0;
-            while (read != 10 && inputFile.getFilePointer() < inputFile.length()) {
-                convertedValue = conversionTable.get(read);
-                writeBytes[bytesInLineCounter] = convertedValue.byteValue();
-                read = inputFile.read();
-                bytesInLineCounter++;
+            int numberOfReadBytes = inputFile.read(readBytesBuff);
+            for (int i = 0; i < numberOfReadBytes; i++) {
+                //In case of end of line (/n)  - complete rest ot line with byte 64 and write down.
+                if (readBytesBuff[i] == 10) {
+                    for (int j = bytesInWriteLineCounter; j < inputDataParams.getRecordLength(); j++) {
+                        writeBytes[j] = 64;// complete each line with empty character (@) till required length of line
+                    }
+                    outputFile.write(writeBytes);
+                    bytesInWriteLineCounter = 0;
+                } else {
+                    convertedValue = conversionTable.get(Byte.toUnsignedInt(readBytesBuff[i]));
+                    writeBytes[bytesInWriteLineCounter] = convertedValue.byteValue();
+                    bytesInWriteLineCounter++;
+                }
             }
-            for (int i = bytesInLineCounter; i < inputDataParams.getRecordLength(); i++) {
-                writeBytes[i] = 64;// complete each line with empty character (@) till required length of line
-            }
-            outputFile.write(writeBytes);
         }
         inputFile.close();
         outputFile.close();
